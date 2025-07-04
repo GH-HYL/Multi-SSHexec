@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# core/sshexec_get.py
 
 import os
 import sys

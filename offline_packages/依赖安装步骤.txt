@@ -1,0 +1,10 @@
+#涉及的模块，需要安装的模块
+python-docx
+openpyxl
+python-pptx
+pywin32
+
+# 下载指定及其所有依赖包​
+pip download -r ./offline_packages/requirements.txt -d ./offline_packages
+# 在离线环境中安装​
+pip install --no-index --find-links=./offline_packages -r ./offline_packages/requirements.txt

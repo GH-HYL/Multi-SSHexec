@@ -1,6 +1,6 @@
 *
 !.gitignore
-!readme.txt
+!readme.md
 
 
 !sshexec.py
@@ -11,6 +11,10 @@
 !core/sshexec_rules.py
 !core/sshexec_utils.py
 !core/sshexec_config.py
+
+!packages/
+!packages/SuiBianQiMing/
+!packages/SuiBianQiMing/**
 
 !offline_packages/
 !offline_packages/*
