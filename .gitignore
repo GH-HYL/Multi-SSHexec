@@ -1,0 +1,17 @@
+*
+!.gitignore
+!readme.txt
+
+
+!sshexec.py
+
+
+!core/
+!core/sshexec_config.py
+!core/sshexec_get.py
+!core/sshexec_rules.py
+!core/sshexec_utils.py
+
+
+!offline_packages/
+!offline_packages/*

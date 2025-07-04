@@ -1,0 +1,152 @@
+文档1: core/sshexec_utils.py
+​​parse_args()​​
+解析命令行参数，定义互斥参数组（-c/-s）
+设置参数默认值（超时、sudo模式等）
+自动处理文件路径的跨平台格式转换（替换反斜杠）
+
+​​read_nodes(csv_path)​​
+从CSV文件读取节点信息（IP/端口/账号/密码）
+支持多种分隔符（逗号/分号/制表符）和IP:端口组合格式
+自动应用默认值（DEFAULT_IP_PORT/DEFAULT_USER）
+BASE64解码密码字段并校验端口范围(1-65535)
+严格检测重复IP并中断执行
+
+​​check_dependencies()​​
+检查Python版本(≥3.8)和paramiko库(≥2.7.1)
+验证paramiko.SSHClient核心功能可用性
+提供明确的版本升级指导
+
+​​create_latest_log_symlink()​​
+创建最新历史日志目录的符号链接(latest_history)
+仅限Linux系统，需root权限
+
+​​rename_nodelog_folders(log_base)​​
+重命名日志分类目录（追加成功/失败数量后缀）
+格式：错误类型-数量（如密码错误-12）
+
+​​convert_combined_log_to_xlsx(log_base)​​
+转换combined.log为Excel格式(combined.xlsx)
+拆分为三列：IP地址、日志内容、输出详情
+自动调整列宽，添加标题样式和冻结窗格
+
+​​merge_nodelogs_to_combined(log_base)​​
+合并所有节点日志到combined.log
+按错误类型分类排序（成功→高危错误→普通错误）
+添加80字符分隔线区分不同节点
+
+
+文档2: sshexec.py
+核心执行类
+​​upload_files(sftp, local_path, remote_path, result, debug, upload_timeout, upload_method='sftp')​​
+支持SFTP/rsync双模式文件传输
+实时记录传输状态（开始/传输中/超时/缺失）
+添加文件校验机制确保远程文件存在
+
+​​ensure_remote_dir_exists(sftp, remote_dir, result, debug)​​
+递归创建远程目录（支持多级嵌套）
+自动检测已存在目录并跳过创建
+记录目录创建状态到result对象
+
+​​remove_dir(sftp, path, result, debug)​​
+递归删除远程目录及所有内容
+先修复权限(755)再删除（避免权限不足）
+记录删除状态和失败文件路径
+
+​​upload_package(client, package, result, debug, upload_timeout)​​
+安全上传文件包到~/.sshexec_packages
+路径消毒防止目录穿越攻击
+调用upload_files实现多文件批量传输
+
+​​execute_command(client, command, mode, sudo_mode, result, timeout, traceback)​​
+执行远程命令/脚本（支持sudo模式）
+实现SHA256脚本校验和验证
+检测密码过期提示和38种危险命令
+处理执行超时和连接中断
+
+​​cleanup_package(client, package, delete, result, debug, config)​​
+清理远程临时文件包（-p参数配套）
+根据-d参数决定是否删除
+支持sudo权限清理操作
+
+​​execute_ssh(ip, port, user, pwd, config, ...)​​
+SSH连接和执行主控制流
+处理连接/认证/超时等错误
+协调上传→执行→清理全流程
+实现socket级端口可达性检测
+
+​​classify_error(ssh_result)​​
+错误分类器（映射12种标准错误类型）
+识别密码过期/磁盘满/校验失败等场景
+处理退出码和错误输出特征
+
+​​process_node(node, config, log_base, ...)​​
+单节点处理管道
+生成格式化日志（含时间标记）
+保存分类日志到对应错误目录
+处理执行异常和键盘中断
+日志与报告类
+
+​​save_results(log_base, result, total, ...)​​
+生成最终执行报告(report.txt)
+统计成功率/失败分类/IP清单
+三重校验节点数量一致性
+记录完整执行命令和参数
+配置校验类
+
+​​validate_args(args, parser, nodes)​​
+参数综合校验器
+检查CSV/脚本文件存在性
+验证空密码节点在非交互模式
+检测ROOT权限文件残留风险
+
+​​validate_command_security(command)​​
+命令模式安全检查
+检测38种危险模式（rm -rf/dd等）
+触发SecurityCheckError异常
+
+​​validate_script_security(script_path)​​
+脚本模式安全检查
+校验文件大小(≤4KB)/编码(UTF-8)/换行符(LF)
+调用危险命令检测引擎
+
+​​check_for_dangerous_patterns(content)​​
+危险命令检测引擎
+基于DANGEROUS_PATTERNS规则匹配
+返回风险行详情（行号/内容/模式）
+工具类
+
+​​get_timeout_values(timeout_str)​​
+解析超时字符串格式
+返回三元组（连接超时，命令超时，上传超时）
+处理缺省值和格式错误
+
+​​package_latest_history()​​
+打包最新历史日志（ZIP/TAR）
+自动清理旧压缩包
+支持Linux/macOS/Windows
+​
+​save_resources(log_base, args)​​
+保存执行资源副本到resources目录
+包括：CSV文件/执行脚本/上传文件包
+保持原始目录结构
+
+
+文档3: core/sshexec_config.py
+全局配置常量（无函数）：
+版本号/超时设置/颜色代码
+默认SSH端口/账号/密码(BASE64)
+危险命令模式(DANGEROUS_PATTERNS)
+文档4: core/sshexec_rules.py
+危险命令规则库（无函数）：
+定义38种危险操作模式
+包含正则表达式和风险等级
+覆盖文件/系统/网络/容器操作
+
+main()（在sshexec.py中）
+程序主入口
+信号处理（CTRL+C优雅退出）
+线程池调度（动态线程数控制）
+全局日志初始化和管理
+执行结果后处理（生成报告/打包日志）
+资源清理（关闭SSH连接/文件描述符）
+
