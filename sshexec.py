@@ -161,13 +161,7 @@ class NodeLogGenerator:
         self.error_type = ssh_result.error_type
 
     def _should_log(self, entry_type):
-        # return (
-        #     self.result.error_type is not None or
-        #     not entry_type['debug'] or
-        #     (self.debug and entry_type['debug'])
-        # )
-        # return self.result.error_type is not None or not entry_type.get('debug', False)
-        return self.result.error_type is not None or not entry_type.get()
+        return True
 
     def generate_formatted_logs(self):
         self._add_time_header()
@@ -221,8 +215,7 @@ class NodeLogGenerator:
             entry_type = self.PHASE_TEMPLATES['connection']['success']
             entry = entry_type['msg']
 
-        if self._should_log(entry_type):
-            self.log_buffer.append(f"【{self.ip}】{entry}")
+        self.log_buffer.append(f"【{self.ip}】{entry}")
 
     def _process_directory_phase(self):
         dir_status = self.result.directory_status
@@ -243,8 +236,7 @@ class NodeLogGenerator:
         else:
             return
 
-        if self._should_log(entry_type):
-            self.log_buffer.append(f"【{self.ip}】{entry}")
+        self.log_buffer.append(f"【{self.ip}】{entry}")
 
     def _process_file_transfer(self):
 
@@ -279,8 +271,7 @@ class NodeLogGenerator:
                 else:
                     continue
 
-                if self._should_log(entry_type):
-                    self.log_buffer.append(f"【{self.ip}】{entry}")
+                self.log_buffer.append(f"【{self.ip}】{entry}")
 
     def _process_execution(self):
         if not self.result.command_exec:
@@ -292,8 +283,7 @@ class NodeLogGenerator:
         if self.error_type == 'command_timeout':
             entry_type = self.PHASE_TEMPLATES['execution']['timeout']
             entry = entry_type['msg'].format(timeout=self.result.cmd_timeout)
-            if self._should_log(entry_type):
-                self.log_buffer.append(f"【{self.ip}】{entry}")
+            self.log_buffer.append(f"【{self.ip}】{entry}")
 
     def _add_execution_prepare_log(self):
         try:
@@ -309,8 +299,7 @@ class NodeLogGenerator:
                 entry_type = self.PHASE_TEMPLATES['execution']['prepare']
                 entry = entry_type['msg'].format(script="未知脚本")
 
-            if self._should_log({'debug': False}):
-                self.log_buffer.append(f"【{self.ip}】{entry}")
+            self.log_buffer.append(f"【{self.ip}】{entry}")
         except Exception as e:
             error_msg = f"日志生成异常: {str(e)}"
             self.log_buffer.append(f"【{self.ip}】[日志错误] {error_msg}")
@@ -348,13 +337,6 @@ class NodeLogGenerator:
         if self.result.error_type == 'checksum_mismatch':
             self.log_buffer.append(f"【{self.ip}】{COLOR_RED}安全警报：脚本传输完整性校验失败！{COLOR_RESET}")
 
-        if self.debug:
-            entry_type = self.PHASE_TEMPLATES['execution']['output']
-            entry = entry_type['msg'].format(
-                lines=len(self.result.output_lines),
-                errors=len(self.result.error_lines)
-            )
-            self.log_buffer.append(f"【{self.ip}】{entry}")
         for line in self.result.error_lines:
             if "Traceback" not in line and "File \"" not in line:
                 self.log_buffer.append(f"【{self.ip}】错误输出：{line}")
@@ -410,9 +392,6 @@ def upload_files(sftp, local_path, remote_path, result, upload_timeout, upload_m
                             pass  
                         sftp.put(local_item, remote_item, callback=upload_callback) 
                     except Exception as e:
-                        upload_debug = f"[文件上传异常] 本地={local_item}, 远程={remote_item}, 错误={str(e)}"
-    
-                        
                         if "No space left on device" in str(e):
                             result.error_type = 'disk_full'
                             result.status = f"磁盘空间不足: {str(e)}"
@@ -446,19 +425,19 @@ def upload_files(sftp, local_path, remote_path, result, upload_timeout, upload_m
 
 
 
-def ensure_remote_dir_exists(sftp, remote_dir, result, debug):
+def ensure_remote_dir_exists(sftp, remote_dir, result):
     try:
         sftp.stat(remote_dir)
         result.directory_status = {'path': remote_dir, 'exists': True}
     except FileNotFoundError:
         parent_dir = posixpath.dirname(remote_dir)
         if parent_dir != remote_dir:
-            ensure_remote_dir_exists(sftp, parent_dir, result, debug)
+            ensure_remote_dir_exists(sftp, parent_dir, result)
         sftp.mkdir(remote_dir, mode=0o755) 
         result.directory_status = {'path': remote_dir, 'created': True}
     return result
 
-def remove_dir(sftp, path, result, debug):
+def remove_dir(sftp, path, result):
     result.cleanup_status = {'path': path,'start': True,'files': [],'dirs': []}
     def fix_permissions(sftp, path):
         try:
@@ -470,7 +449,7 @@ def remove_dir(sftp, path, result, debug):
         for item in sftp.listdir(path):
             itempath = posixpath.join(path, item)
             if sftp.stat(itempath).st_mode & 0o40000: 
-                remove_dir(sftp, itempath, result, debug)
+                remove_dir(sftp, itempath, result)
                 fix_permissions(sftp, itempath) 
             else:
                 fix_permissions(sftp, itempath)  
@@ -512,7 +491,7 @@ def remove_dir(sftp, path, result, debug):
         result.cleanup_status['unknown_error'] = error_msg
         raise
 
-def upload_package(client, package, result, debug, upload_timeout): 
+def upload_package(client, package, result, upload_timeout): 
     base_dir = os.path.abspath("packages")  
     user_path = os.path.normpath(package)   
     
@@ -534,8 +513,8 @@ def upload_package(client, package, result, debug, upload_timeout):
         remote_full_path = posixpath.join(remote_base, sanitized_remote_package)
         sanitized_path = posixpath.normpath(remote_full_path)  
 
-        ensure_remote_dir_exists(sftp, sanitized_path, result, debug)
-        upload_files(sftp, local_package_path, sanitized_path, result, debug, upload_timeout) 
+        ensure_remote_dir_exists(sftp, sanitized_path, result)
+        upload_files(sftp, local_package_path, sanitized_path, result, upload_timeout) 
 
         missing_files = []
         for root, dirs, files in os.walk(local_package_path):
@@ -682,8 +661,6 @@ def execute_command(client, command, mode, sudo_mode, result, timeout, traceback
         result.error_type = 'ssh_error'
         return -1
     except Exception as e:
-        cmd_debug = f"[命令执行异常] 命令={command}, 错误={str(e)}, 堆栈={traceback.format_exc()}"
-
         
         result.command_exec['exit_code'] = -1
         result.error_lines = [str(e)]
@@ -692,7 +669,7 @@ def execute_command(client, command, mode, sudo_mode, result, timeout, traceback
 
 
 
-def cleanup_package(client, package, delete, result, debug, config):
+def cleanup_package(client, package, delete, result, config):
     if delete.lower() in ('y', 'yes'):
         try:
             sftp = client.open_sftp()
@@ -770,9 +747,6 @@ def execute_ssh(ip, port, user, pwd, config, command, conn_timeout, cmd_timeout,
             result.status = f"端口 {port} 不可达或地址解析失败（错误：{str(e)}）" 
             result.end_time = datetime.now()
             result.duration = result.end_time - result.start_time
-            
-            network_debug = f"[端口检测失败] IP={ip}, 端口={port}, 错误={str(e)}"
-            
             
             sock.close()
             log_generator = NodeLogGenerator(ip=ip, ssh_result=result, command=command, package=package, script_path=script_path)
@@ -916,7 +890,7 @@ def execute_ssh(ip, port, user, pwd, config, command, conn_timeout, cmd_timeout,
     
     except paramiko.SSHException as e:
         result.error_type = 'ssh_protocol_error'
-        result.status = "SSH协议错误（详见debug日志）" 
+        result.status = "SSH协议错误" 
         if "Error reading SSH protocol banner" in str(e):
             result.status = "SSH协议不兼容或网络中断"
         
@@ -1153,7 +1127,6 @@ def process_node(node, config, log_base, result, command, package, script_path):
         log_generator = NodeLogGenerator(
             ip=ip, 
             ssh_result=ssh_result, 
-            debug=config.debug,
             command=config.command, 
             package=config.package,
             script_path=config.script_path  
@@ -1692,7 +1665,7 @@ def main():
                         break
                     future = executor.submit(
                         process_node, node, config, log_base, 
-                        config.debug, result, config.command,
+                        result, config.command,
                         config.package, config.script_path
                     )
                     futures[future] = node
@@ -1714,7 +1687,6 @@ def main():
                         log_generator = NodeLogGenerator(
                             ip=node[0], 
                             ssh_result=result_log, 
-                            debug=config.debug,
                             command=config.command, 
                             package=config.package,
                             script_path=config.script_path
