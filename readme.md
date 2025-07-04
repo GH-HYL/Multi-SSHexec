@@ -176,6 +176,8 @@ DANGEROUS_PATTERNS = [
 
 GitHub仓库：github.com/sshexec
 
+Gitee仓库：https://gitee.com/huang-fugui-123/sshexec
+
 技术交流邮箱：465317918@qq.com
 
 # 警告：
