@@ -58,12 +58,12 @@ project/
 上传包结构：
 
 ```text
-packages/    # 包目录 
-└─ myapp/    # -p参数指定（自定义包名）
-   ├── bin/  # 自动755权限
-   ├── config/
-   ├── data/
-   └── install.sh  # 自动755权限
+packages/          # 包目录 
+└─ myapp/          # -p参数指定（自定义包名）
+   ├── bin/        # 上传到目标节点后，自动755权限
+   ├── config/     # 上传到目标节点后，自动755权限
+   ├── data/       # 上传到目标节点后，自动755权限
+   └── install.sh  # 上传到目标节点后，自动755权限
 ```
 
 日志结构：
@@ -172,9 +172,12 @@ DANGEROUS_PATTERNS = [
 ]
 ```
 
-
 ## 11.联系方式
 
 GitHub仓库：github.com/sshexec
-技术交流群：无
-交流邮箱：465317918@qq.com
+Gitee仓库：https://gitee.com/huang-fugui-123/sshexec
+技术交流邮箱：465317918@qq.com
+
+# 警告：
+
+该工具可能存在BUG，请在测试环境测试后，再投入生产使用
