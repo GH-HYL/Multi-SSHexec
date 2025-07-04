@@ -64,7 +64,7 @@ class Config:
     def __init__(self, command='', conn_timeout=DEFAULT_CONN_TIMEOUT, 
                  cmd_timeout=DEFAULT_CMD_TIMEOUT, upload_timeout=DEFAULT_UPLOAD_TIMEOUT, 
                  mode='cmd', script_path=None, sudo_mode=DEFAULT_SUDO_MODE,
-                 package=None, delete=DEFAULT_DELETE, debug=False, log_base=''):
+                 package=None, delete=DEFAULT_DELETE, log_base=''):
         self.command = command
         self.conn_timeout = conn_timeout
         self.cmd_timeout = cmd_timeout
@@ -74,7 +74,6 @@ class Config:
         self.sudo_mode = sudo_mode
         self.package = package
         self.delete = delete
-        self.debug = debug
         self.log_base = log_base
 
 class SecurityCheckError(ValueError):
@@ -112,49 +111,48 @@ class ExecutionResult:
 class NodeLogGenerator:
     PHASE_TEMPLATES = {
         'connection': {
-            'success': {"msg": "[连接建立] SSH连接成功建立", "debug": False},
-            'timeout': {"msg": "[连接超时] {duration}秒内未响应", "debug": False},
-            'auth_fail': {"msg": "[认证失败] 用户名/密码错误", "debug": False},
-            'ssh_error': {"msg": "[SSH错误] {error}", "debug": False},
-            'other_errors': {"msg": "[连接错误] {error}", "debug": False}
+            'success': {"msg": "[连接建立] SSH连接成功建立"},
+            'timeout': {"msg": "[连接超时] {duration}秒内未响应"},
+            'auth_fail': {"msg": "[认证失败] 用户名/密码错误"},
+            'ssh_error': {"msg": "[SSH错误] {error}"},
+            'other_errors': {"msg": "[连接错误] {error}"}
         },
         'directory': {
-            'create': {"msg": "[目录创建] 已创建远程目录：{path}", "debug": True},
-            'exists': {"msg": "[目录准备] 远程目录已就绪：{path}", "debug": True},
-            'fail': {"msg": "[目录错误] 创建失败：{error}", "debug": False}
+            'create': {"msg": "[目录创建] 已创建远程目录：{path}"},
+            'exists': {"msg": "[目录准备] 远程目录已就绪：{path}"},
+            'fail': {"msg": "[目录错误] 创建失败：{error}"}
         },
         'file_transfer': {
-            'start': {"msg": "[文件传输] 开始上传：{local} → {remote}", "debug": False},
-            'method': {"msg": "[上传方式] {method}", "debug": False}, 
-            'uploading': {"msg": "[文件上传] 正在上传文件：{local} → {remote}", "debug": True},
-            'timeout': {"msg": "[上传超时] 超过{timeout}秒未完成", "debug": False}, 
-            'success': {"msg": "[文件上传] 文件上传成功", "debug": False},
-            'verify': {"msg": "[文件验证] 远程文件存在确认：{path}", "debug": True},
-            'missing': {"msg": "[文件验证] 缺失文件：{path}", "debug": False},
-            'verified': {"msg": "[文件验证] 远程文件存在确认：{path}", "debug": True}
+            'start': {"msg": "[文件传输] 开始上传：{local} → {remote}"},
+            'method': {"msg": "[上传方式] {method}"}, 
+            'uploading': {"msg": "[文件上传] 正在上传文件：{local} → {remote}"},
+            'timeout': {"msg": "[上传超时] 超过{timeout}秒未完成"}, 
+            'success': {"msg": "[文件上传] 文件上传成功"},
+            'verify': {"msg": "[文件验证] 远程文件存在确认：{path}"},
+            'missing': {"msg": "[文件验证] 缺失文件：{path}"},
+            'verified': {"msg": "[文件验证] 远程文件存在确认：{path}"}
         },
         'execution': {
-            'prepare': {"msg": "[命令执行] 执行脚本：{script}", "debug": False},
-            'exit_code': {"msg": "[执行结果] 退出码：{code}", "debug": False},
-            'output': {"msg": "[输出收集] 收集到 {lines} 行标准输出，{errors} 行错误输出", "debug": True},
-            'password_expired': {"msg": "[密码检查] 检测到密码过期提示", "debug": False},
-            'timeout': {"msg": "[执行超时] {timeout}秒内未完成", "debug": False}
+            'prepare': {"msg": "[命令执行] 执行脚本：{script}"},
+            'exit_code': {"msg": "[执行结果] 退出码：{code}"},
+            'output': {"msg": "[输出收集] 收集到 {lines} 行标准输出，{errors} 行错误输出"},
+            'password_expired': {"msg": "[密码检查] 检测到密码过期提示"},
+            'timeout': {"msg": "[执行超时] {timeout}秒内未完成"}
         },
         'cleanup': {
-            'start': {"msg": "[清理操作] 开始删除远程目录：{path}", "debug": True},
-            'success': {"msg": "[清理操作] 远程目录已删除：{path}", "debug": False},
-            'fail': {"msg": "[清理操作] 删除失败：{error}", "debug": False}
+            'start': {"msg": "[清理操作] 开始删除远程目录：{path}"},
+            'success': {"msg": "[清理操作] 远程目录已删除：{path}"},
+            'fail': {"msg": "[清理操作] 删除失败：{error}"}
         },
         'closure': {
-            'complete': {"msg": "[连接关闭] 已完成对 {ip} 的处理", "debug": False}
+            'complete': {"msg": "[连接关闭] 已完成对 {ip} 的处理"}
         }
     }
-    def __init__(self, ip, ssh_result, debug, command=None, package=None, script_path=None):
+    def __init__(self, ip, ssh_result, command=None, package=None, script_path=None):
         if not isinstance(ssh_result, SSHResult):
             raise TypeError("需要SSHResult实例")
         self.ip = ip
         self.result = ssh_result
-        self.debug = debug
         self.command = command
         self.package = package
         self.script_path = script_path
@@ -163,11 +161,13 @@ class NodeLogGenerator:
         self.error_type = ssh_result.error_type
 
     def _should_log(self, entry_type):
-        return (
-            self.result.error_type is not None or
-            not entry_type['debug'] or
-            (self.debug and entry_type['debug'])
-        )
+        # return (
+        #     self.result.error_type is not None or
+        #     not entry_type['debug'] or
+        #     (self.debug and entry_type['debug'])
+        # )
+        # return self.result.error_type is not None or not entry_type.get('debug', False)
+        return self.result.error_type is not None or not entry_type.get()
 
     def generate_formatted_logs(self):
         self._add_time_header()
@@ -363,7 +363,7 @@ class NodeLogGenerator:
             self.log_buffer.append(f"【{self.ip}】》》{line}")
 
 
-def upload_files(sftp, local_path, remote_path, result, debug, upload_timeout, upload_method='sftp'):  
+def upload_files(sftp, local_path, remote_path, result, upload_timeout, upload_method='sftp'):  
     import subprocess
 
     start_time = time.time() 
@@ -431,8 +431,8 @@ def upload_files(sftp, local_path, remote_path, result, debug, upload_timeout, u
                         print(f"文件验证失败: {remote_item}, 错误信息: {str(e)}")
                         raise
                 elif os.path.isdir(local_item):
-                    ensure_remote_dir_exists(sftp, remote_item, result, debug)
-                    upload_files(sftp, local_item, remote_item, result, debug, upload_timeout)  
+                    ensure_remote_dir_exists(sftp, remote_item, result)
+                    upload_files(sftp, local_item, remote_item, result, upload_timeout)  
     except TimeoutError as e:
         result.error_type = 'upload_timeout'
         result.status = str(e)
@@ -737,7 +737,7 @@ def cleanup_package(client, package, delete, result, debug, config):
             return False
     return True
 
-def execute_ssh(ip, port, user, pwd, config, command, conn_timeout, cmd_timeout, upload_timeout, mode, script_path, sudo_mode, package, delete, debug, log_base):
+def execute_ssh(ip, port, user, pwd, config, command, conn_timeout, cmd_timeout, upload_timeout, mode, script_path, sudo_mode, package, delete, log_base):
     if shutdown_event.is_set():
         result = SSHResult()
         result.error_type = 'user_abort'
@@ -775,7 +775,7 @@ def execute_ssh(ip, port, user, pwd, config, command, conn_timeout, cmd_timeout,
             
             
             sock.close()
-            log_generator = NodeLogGenerator(ip=ip, ssh_result=result, debug=debug, command=command, package=package, script_path=script_path)
+            log_generator = NodeLogGenerator(ip=ip, ssh_result=result, command=command, package=package, script_path=script_path)
             log_dir = os.path.join(config.log_base, 'nodelogs', classify_error(result))
             os.makedirs(log_dir, exist_ok=True)
             with open(os.path.join(log_dir, f"{ip}.log"), 'w', encoding='utf-8') as f:
@@ -797,12 +797,12 @@ def execute_ssh(ip, port, user, pwd, config, command, conn_timeout, cmd_timeout,
             result.ssh_ip = ip
             result.ssh_port = port
             result.ssh_user = user
-            upload_success = upload_package(client, package, result, debug, upload_timeout) 
+            upload_success = upload_package(client, package, result, upload_timeout) 
             
             if not upload_success:
                 if result.error_type == 'upload_timeout': 
                     result.status = f"文件上传超过{upload_timeout}秒"
-                log_generator = NodeLogGenerator(ip=ip, ssh_result=result, debug=debug, command=command, package=package, script_path=script_path)
+                log_generator = NodeLogGenerator(ip=ip, ssh_result=result, command=command, package=package, script_path=script_path)
                 log_dir = os.path.join(config.log_base, 'nodelogs', classify_error(result))
                 os.makedirs(log_dir, exist_ok=True)
                 with open(os.path.join(log_dir, f"{ip}.log"), 'w', encoding='utf-8') as f:
@@ -869,7 +869,7 @@ def execute_ssh(ip, port, user, pwd, config, command, conn_timeout, cmd_timeout,
                 if result.cleanup_status.get('fail'):
                     result.error_type = 'cleanup_failed'
                     result.status = "临时文件清理失败"
-                    log_generator = NodeLogGenerator(ip=ip, ssh_result=result, debug=debug, command=command, package=package, script_path=script_path)
+                    log_generator = NodeLogGenerator(ip=ip, ssh_result=result, command=command, package=package, script_path=script_path)
                     log_dir = os.path.join(config.log_base, 'nodelogs', classify_error(result))
                     os.makedirs(log_dir, exist_ok=True)
                     with open(os.path.join(log_dir, f"{ip}.log"), 'w', encoding='utf-8') as f:
@@ -890,7 +890,7 @@ def execute_ssh(ip, port, user, pwd, config, command, conn_timeout, cmd_timeout,
             else:
                 result.error_type = 'ssh_error'
                 result.status = f"SSH传输错误: {str(e)}"
-            log_generator = NodeLogGenerator(ip=ip, ssh_result=result, debug=debug, command=command, package=package, script_path=script_path)
+            log_generator = NodeLogGenerator(ip=ip, ssh_result=result, command=command, package=package, script_path=script_path)
             log_dir = os.path.join(config.log_base, 'nodelogs', classify_error(result))
             os.makedirs(log_dir, exist_ok=True)
             with open(os.path.join(log_dir, f"{ip}.log"), 'w', encoding='utf-8') as f:
@@ -901,7 +901,7 @@ def execute_ssh(ip, port, user, pwd, config, command, conn_timeout, cmd_timeout,
             result.end_time = datetime.now()  
             result.duration = result.end_time - result.start_time  
 
-            log_generator = NodeLogGenerator(ip=ip, ssh_result=result, debug=debug, command=command, package=package, script_path=script_path)
+            log_generator = NodeLogGenerator(ip=ip, ssh_result=result, command=command, package=package, script_path=script_path)
             log_dir = os.path.join(config.log_base, 'nodelogs', classify_error(result))
             os.makedirs(log_dir, exist_ok=True)
             with open(os.path.join(log_dir, f"{ip}.log"), 'w', encoding='utf-8') as f:
@@ -1130,7 +1130,7 @@ def classify_error(ssh_result):
     return '其他错误'
 
 
-def process_node(node, config, log_base, debug, result, command, package, script_path):
+def process_node(node, config, log_base, result, command, package, script_path):
     try:
         ip, port, user, pwd = node
         conn_timeout, cmd_timeout, upload_timeout = get_timeout_values(f"{config.conn_timeout}-{config.cmd_timeout}-{config.upload_timeout}")  
@@ -1147,7 +1147,6 @@ def process_node(node, config, log_base, debug, result, command, package, script
             sudo_mode=config.sudo_mode, 
             package=config.package,
             delete=config.delete, 
-            debug=config.debug,
             log_base=config.log_base
         )
 
@@ -1194,7 +1193,7 @@ def process_node(node, config, log_base, debug, result, command, package, script
         ssh_result.status = f"节点处理异常: {str(e)}"
         
     finally:
-        log_generator = NodeLogGenerator(ip=ip, ssh_result=ssh_result, debug=debug, command=command, package=package, script_path=script_path)
+        log_generator = NodeLogGenerator(ip=ip, ssh_result=ssh_result, command=command, package=package, script_path=script_path)
         formatted_logs = log_generator.generate_formatted_logs()
         category = classify_error(ssh_result)
         log_dir = os.path.join(config.log_base, 'nodelogs', category)
@@ -1669,7 +1668,6 @@ def main():
             sudo_mode=args.m,
             package=args.p,
             delete=args.d,
-            debug=True,
             log_base=log_base
         )
         if args.p:
