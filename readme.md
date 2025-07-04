@@ -127,10 +127,10 @@ historys/
 
 ```text
   -h, --help            show this help message and exit
-  -c COMMAND            ⚠ （必填）⚠ （命令模式）      后面填写要执行的命令
-  -s SCRIPT             ⚠ （必填）⚠ （脚本模式）      后面填写执行的脚本路径
-  -g REMOTE_PATH        ⚠ （可选）⚠ （下载模式）      下载远程文件/目录路径（必须用双引号包裹）
-  -f FILE               ⚠ （必填）⚠                  后面填写节点信息的 CSV 文件路径
+  -c COMMAND            ⚠ （必填）⚠ （命令模式）       后面填写要执行的命令
+  -s SCRIPT             ⚠ （必填）⚠ （脚本模式）       后面填写执行的脚本路径
+  -g REMOTE_PATH        ⚠ （可选）⚠ （下载模式）       下载远程文件/目录路径（必须用双引号包裹）
+  -f FILE               ⚠ （必填）⚠                   后面填写节点信息的 CSV 文件路径
   -p PACKAGE              （选填）                      指定要上传的文件包名，对应当前路径下的 packages 目录下的子目录名称
   -m MODE                 （选填）  [默认值: sudo]       执行权限模式 ，direct 为普通执行，sudo 为以 sudo 权限执行
   -n THREADS              （选填）  [默认值: 0]          设置最大工作线程数，0 表示最大线程数执行，需要填写大于等于0的整数。
