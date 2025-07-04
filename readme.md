@@ -1,6 +1,6 @@
-# SSHexec - SSH批量运维工具
+# Multi-SSHexec - SSH批量运维工具
 
-SSHexec 是一款企业级（纯属吹牛）SSH批量运维工具，基于Python 3.8+开发，集成了命令执行、脚本分发、文件传输、安全审计等多项功能，专为大规模服务器运维场景设计，支持Windows和Linux双系统。
+Multi-SSHexec 是一款企业级（纯属吹牛）SSH批量运维工具，基于Python 3.8+开发，集成了命令执行、脚本分发、文件传输、安全审计等多项功能，专为大规模服务器运维场景设计，支持Windows和Linux双系统。
 
 ## 1. 多模式执行引擎
 
@@ -174,12 +174,14 @@ DANGEROUS_PATTERNS = [
 
 ## 11.联系方式
 
-GitHub仓库：github.com/sshexec
+GitHub仓库：[github.com/GH-HYL/Multi-SSHexec](https://github.com/GH-HYL/Multi-SSHexec)
 
-Gitee仓库：https://gitee.com/huang-fugui-123/sshexec
+
+Gitee仓库：[gitee.com/huang-fugui-123/Multi-SSHexec](https://gitee.com/huang-fugui-123/Multi-SSHexec)
 
 技术交流邮箱：465317918@qq.com
 
 # 警告：
 
-该工具可能存在BUG，请在测试环境测试后，再投入生产使用
+该工具可能存在BUG，请在测试环境测试验证后，再投入使用
+数据无价，操作前请再思量
