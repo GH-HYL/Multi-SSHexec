@@ -10,7 +10,7 @@
 !core/sshexec_get.py
 !core/sshexec_rules.py
 !core/sshexec_utils.py
-core/sshexec_config.py
+!core/sshexec_config.py
 
 !offline_packages/
 !offline_packages/*
