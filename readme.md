@@ -130,15 +130,15 @@ historys/
   -c COMMAND            ⚠ （必填）⚠ （命令模式）      后面填写要执行的命令
   -s SCRIPT             ⚠ （必填）⚠ （脚本模式）      后面填写执行的脚本路径
   -g REMOTE_PATH        ⚠ （可选）⚠ （下载模式）      下载远程文件/目录路径（必须用双引号包裹）
-  -f FILE               ⚠ （必填）⚠                   后面填写节点信息的 CSV 文件路径
-  -p PACKAGE              （选填）                    指定要上传的文件包名，对应当前路径下的 packages 目录下的子目录名称
-  -m MODE                 （选填）  [默认值: sudo]    执行权限模式 ，direct 为普通执行，sudo 为以 sudo 权限执行
-  -n THREADS              （选填）  [默认值: 0]       设置最大工作线程数，0 表示最大线程数执行，需要填写大于等于0的整数。
+  -f FILE               ⚠ （必填）⚠                  后面填写节点信息的 CSV 文件路径
+  -p PACKAGE              （选填）                      指定要上传的文件包名，对应当前路径下的 packages 目录下的子目录名称
+  -m MODE                 （选填）  [默认值: sudo]       执行权限模式 ，direct 为普通执行，sudo 为以 sudo 权限执行
+  -n THREADS              （选填）  [默认值: 0]          设置最大工作线程数，0 表示最大线程数执行，需要填写大于等于0的整数。
   -t TIMEOUT              （选填）  [默认值: 10-60-60]   设置连接和执行超时时间（秒），格式：连接超时-命令超时
-  -d DELETE               （选填）  [默认值: y]       需与 -p 一起使用，表示执行命令后是否删除上传的文件，y 为删除，n 为保留
-  -l, --local-dir         （必填）（仅用于-g模式）  指定下载文件的本地存放目录
-  -z                      （独立功能，仅支持Linux）   打包最新日志，不可与其他参数一起使用，打包前会删除当前旧打包文件
-  --disinteractive                                    取消交互确认，直接执行命令
+  -d DELETE               （选填）  [默认值: y]          需与 -p 一起使用，表示执行命令后是否删除上传的文件，y 为删除，n 为保留
+  -l, --local-dir         （必填）（仅用于-g模式）        指定下载文件的本地存放目录
+  -z                      （独立功能，仅支持Linux）       打包最新日志，不可与其他参数一起使用，打包前会删除当前旧打包文件
+  --disinteractive                                       取消交互确认，直接执行命令
 ```
 
 ## 9. csv文件格式详解
@@ -176,7 +176,6 @@ DANGEROUS_PATTERNS = [
 
 GitHub仓库：[github.com/GH-HYL/Multi-SSHexec](https://github.com/GH-HYL/Multi-SSHexec)
 
-
 Gitee仓库：[gitee.com/huang-fugui-123/Multi-SSHexec](https://gitee.com/huang-fugui-123/Multi-SSHexec)
 
 技术交流邮箱：465317918@qq.com
@@ -184,4 +183,4 @@ Gitee仓库：[gitee.com/huang-fugui-123/Multi-SSHexec](https://gitee.com/huang-
 # 警告：
 
 该工具可能存在BUG，请在测试环境测试验证后，再投入使用
-数据无价，操作前请再思量
+数据无价，操作前请再三思量
