@@ -16,8 +16,8 @@ DEFAULT_TIMEOUT = f"{DEFAULT_CONN_TIMEOUT}-{DEFAULT_CMD_TIMEOUT}-{DEFAULT_UPLOAD
 
 # CSV文件相关配置
 DEFAULT_IP_PORT = "10022"              # CSV文件默认IP端口 10022
-DEFAULT_USER = "test"                 # CSV文件默认用户名
-DEFAULT_PASSWORD = "RG0zcip5c3k0Zwaz=="   # CSV文件默认密码（base64编码后的字符串） # 可以为空→"",为空后csv仍然未配置密码，可以通过命令行参数传入密码
+DEFAULT_USER = "jx_zyc"                 # CSV文件默认用户名
+DEFAULT_PASSWORD = "RG0zcip5c3k0Zw=="   # CSV文件默认密码（base64编码后的字符串） # 可以为空→"",为空后csv仍然未配置密码，可以通过命令行参数传入密码
 
 # 颜色配置
 COLOR_GREEN = "\033[32m"                # 绿色
